@@ -1,0 +1,25 @@
+[Unit]
+Description=Ceph Docker plugin
+After=docker.service
+
+[Service]
+EnvironmentFile=-/etc/environment
+Environment=HOSTNAME=%H
+ExecStartPre=-/usr/bin/docker pull registry.service.consul:5000/cluster.coreos.rbd-docker-plugin
+ExecStartPre=-/usr/bin/docker rm -f cluster.coreos.rbd-docker-plugin
+ExecStartPre=/usr/bin/docker run --name cluster.coreos.rbd-docker-plugin registry.service.consul:5000/cluster.coreos.rbd-docker-plugin /bin/true
+ExecStartPre=/usr/sbin/modprobe rbd
+ExecStartPre=-/usr/bin/mkdir -p /opt/lib/rbd-docker-plugin
+ExecStartPre=/bin/bash -c "/usr/bin/docker export cluster.coreos.rbd-docker-plugin | sudo tar -C/opt/lib/rbd-docker-plugin -xv"
+;; Yikes! Need to find a way to remove next line:
+ExecStartPre=-/usr/bin/mkdir -p /var/lib/docker-volumes/rbd/docker/foo3
+Type=simple
+ExecStart=/usr/bin/env PATH=/opt/lib/rbd-docker-plugin/scripts:/usr/sbin:/usr/bin RBD_DOCKER_PLUGIN_DEBUG=1 /opt/lib/rbd-docker-plugin/lib/x86_64-linux-gnu/ld-2.13.so --library-path /opt/lib/rbd-docker-plugin/usr/lib/x86_64-linux-gnu:/opt/lib/rbd-docker-plugin/lib/x86_64-linux-gnu:/opt/lib/rbd-docker-plugin/usr/lib /opt/lib/rbd-docker-plugin/go/bin/rbd-docker-plugin -create=true --user=docker --pool=docker
+Restart=always
+RestartSec=10s
+TimeoutStartSec=120
+TimeoutStopSec=15
+
+[X-Fleet]
+Global=true
+
