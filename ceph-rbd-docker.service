@@ -5,7 +5,7 @@ After=docker.service
 [Service]
 EnvironmentFile=-/etc/environment
 Environment=HOSTNAME=%H
-ExecStartPre=-/usr/bin/docker pull registry.service.consul:5000/cluster.coreos.rbd-docker-plugin
+ExecStartPre=/usr/bin/docker pull registry.service.consul:5000/cluster.coreos.rbd-docker-plugin
 ExecStartPre=-/usr/bin/docker rm -f cluster.coreos.rbd-docker-plugin
 ExecStartPre=/usr/bin/docker run --name cluster.coreos.rbd-docker-plugin registry.service.consul:5000/cluster.coreos.rbd-docker-plugin /bin/true
 ExecStartPre=/usr/sbin/modprobe rbd
